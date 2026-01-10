@@ -1,0 +1,100 @@
+import 'package:flutter/material.dart';
+import 'onboarding_burn_screen.dart';
+
+
+
+
+class OnboardingGoalScreen extends StatelessWidget {
+  const OnboardingGoalScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
+
+    return Scaffold(
+      backgroundColor: Colors.white,
+      body: Stack(
+        children: [
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              // 🔵 TOP IMAGE (NO GAP)
+              SizedBox(
+                width: double.infinity,
+                height: size.height * 0.52,
+                child: Image.asset(
+                  'assets/images/on_1.png',
+                  fit: BoxFit.cover,
+                ),
+              ),
+
+              const SizedBox(height: 24),
+
+              // 📝 Title
+              const Text(
+                "Track Your Goal",
+                style: TextStyle(
+                  fontSize: 26,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+
+              const SizedBox(height: 12),
+
+              // 📄 Description
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 32),
+                child: Text(
+                  "Don't worry if you have trouble determining your goals, "
+                  "we can help you set and track your goals.",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 15,
+                    color: Colors.black54,
+                    height: 1.5,
+                  ),
+                ),
+              ),
+            ],
+          ),
+
+          // ➡️ FLOATING NEXT BUTTON
+          Positioned(
+            bottom: 30,
+            right: 30,
+            child: GestureDetector(
+             onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const OnboardingBurnScreen(),
+                  ),
+                );
+              },
+
+              child: Container(
+                width: 60,
+                height: 60,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF9EC9FF),
+                  shape: BoxShape.circle,
+                  boxShadow: const [
+                    BoxShadow(
+                      color: Colors.black26,
+                      blurRadius: 6,
+                      offset: Offset(0, 3),
+                    ),
+                  ],
+                ),
+                child: const Icon(
+                  Icons.arrow_forward_ios,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
