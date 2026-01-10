@@ -49,7 +49,7 @@ class OnboardingSleepScreen extends StatelessWidget {
                   "Improve the quality of your sleep with us, good quality "
                   "sleep can bring a good mood in the morning.",
                   style: TextStyle(
-                    fontSize: 15,
+                    fontSize: 18,
                     color: Colors.black54,
                     height: 1.5,
                   ),

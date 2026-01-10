@@ -48,7 +48,7 @@ class OnboardingBurnScreen extends StatelessWidget {
                   "you will be in pain forever.",
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    fontSize: 15,
+                    fontSize: 18,
                     color: Colors.black54,
                     height: 1.5,
                   ),

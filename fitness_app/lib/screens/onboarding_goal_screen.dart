@@ -49,7 +49,7 @@ class OnboardingGoalScreen extends StatelessWidget {
                   "we can help you set and track your goals.",
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    fontSize: 15,
+                    fontSize: 18,
                     color: Colors.black54,
                     height: 1.5,
                   ),

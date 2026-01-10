@@ -31,27 +31,29 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
+
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: const Color(0xFFF6F7FB),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 24),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const SizedBox(height: 40),
+              SizedBox(height: size.height * 0.05),
 
               const Text(
-                "Hey there,",
-                style: TextStyle(color: Colors.black54),
+                "Hey there 👋",
+                style: TextStyle(fontSize: 14, color: Colors.black54),
               ),
 
-              const SizedBox(height: 4),
+              const SizedBox(height: 6),
 
               const Text(
                 "Create an Account",
                 style: TextStyle(
-                  fontSize: 22,
+                  fontSize: 26,
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -76,7 +78,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
 
               _inputField(
                 controller: _emailController,
-                hint: "Email",
+                hint: "Email Address",
                 icon: Icons.email_outlined,
               ),
 
@@ -99,35 +101,40 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                 ),
               ),
 
-              const SizedBox(height: 12),
+              const SizedBox(height: 16),
 
               Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Checkbox(
                     value: _acceptTerms,
+                    activeColor: const Color(0xFF9EC9FF),
                     onChanged: (value) {
                       setState(() => _acceptTerms = value ?? false);
                     },
                   ),
                   const Expanded(
-                    child: Text(
-                      "By continuing you accept our Privacy Policy and Terms of Use",
-                      style: TextStyle(fontSize: 12),
+                    child: Padding(
+                      padding: EdgeInsets.only(top: 6),
+                      child: Text(
+                        "By continuing, you agree to our Privacy Policy and Terms of Use",
+                        style: TextStyle(fontSize: 14),
+                      ),
                     ),
                   ),
                 ],
               ),
 
-              const SizedBox(height: 20),
+              const SizedBox(height: 25),
 
-              // 🔵 Register Button
               SizedBox(
                 width: double.infinity,
-                height: 52,
+                height: 54,
                 child: ElevatedButton(
                   onPressed: _isLoading ? null : _registerUser,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF9EC9FF),
+                    elevation: 4,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(30),
                     ),
@@ -142,20 +149,16 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                           ),
                         )
                       : const Text(
-                          "Register",
-                          style: TextStyle(fontSize: 16),
+                          "Create Account",
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                 ),
               ),
 
-              const SizedBox(height: 20),
-
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: const [
-                  Text("Already have an account? "),
-                ],
-              ),
+              const SizedBox(height: 25),
 
               Center(
                 child: GestureDetector(
@@ -168,16 +171,18 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                     );
                   },
                   child: const Text(
-                    "Login",
+                    "Already have an account? Login",
                     style: TextStyle(
+                      fontSize: 16,
                       color: Colors.blue,
                       fontWeight: FontWeight.bold,
+                      
                     ),
                   ),
                 ),
               ),
 
-              const SizedBox(height: 30),
+              const SizedBox(height: 40),
             ],
           ),
         ),
@@ -233,7 +238,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
     }
   }
 
-  // 🧱 Input Field Widget
+  // 🧱 Modern Input Field
   Widget _inputField({
     required TextEditingController controller,
     required String hint,
@@ -245,13 +250,14 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
       controller: controller,
       obscureText: obscure,
       decoration: InputDecoration(
-        prefixIcon: Icon(icon),
+        prefixIcon: Icon(icon, color: Colors.grey),
         suffixIcon: suffix,
         hintText: hint,
         filled: true,
-        fillColor: const Color(0xFFF7F8F8),
+        fillColor: Colors.white,
+        contentPadding: const EdgeInsets.symmetric(vertical: 18),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(16),
           borderSide: BorderSide.none,
         ),
       ),

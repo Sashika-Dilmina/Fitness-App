@@ -47,7 +47,7 @@ class OnboardingEatScreen extends StatelessWidget {
                   "your diet every day. Healthy eating is fun.",
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    fontSize: 15,
+                    fontSize: 18,
                     color: Colors.black54,
                     height: 1.5,
                   ),

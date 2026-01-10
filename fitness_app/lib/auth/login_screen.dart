@@ -34,11 +34,24 @@ class _LoginScreenState extends State<LoginScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const SizedBox(height: 40),
+              const SizedBox(height: 20),
+
+              /// 🖼️ Illustration
+              Center(
+                child: Image.asset(
+                  "assets/images/login_illustration.png",
+                  height: 220,
+                ),
+              ),
+
+              const SizedBox(height: 20),
 
               const Text(
-                "Hey there,",
-                style: TextStyle(color: Colors.black54),
+                "Hey there 👋,",
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Colors.black54,
+                ),
               ),
 
               const SizedBox(height: 4),
@@ -73,7 +86,9 @@ class _LoginScreenState extends State<LoginScreen> {
                         : Icons.visibility,
                   ),
                   onPressed: () {
-                    setState(() => _obscurePassword = !_obscurePassword);
+                    setState(() {
+                      _obscurePassword = !_obscurePassword;
+                    });
                   },
                 ),
               ),
@@ -90,7 +105,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
               const SizedBox(height: 30),
 
-              // 🔵 Login Button
+              /// 🔵 Login Button
               SizedBox(
                 width: double.infinity,
                 height: 52,
@@ -120,6 +135,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
               const SizedBox(height: 20),
 
+              /// ➕ Register Link
               Center(
                 child: GestureDetector(
                   onTap: () {
@@ -135,6 +151,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     style: TextStyle(
                       color: Colors.blue,
                       fontWeight: FontWeight.bold,
+                      fontSize: 16,
                     ),
                   ),
                 ),
@@ -150,41 +167,53 @@ class _LoginScreenState extends State<LoginScreen> {
 
   // 🔐 SUPABASE LOGIN LOGIC
   Future<void> _loginUser() async {
-    if (_isLoading) return;
+  if (_isLoading) return;
 
-    final email = _emailController.text.trim();
-    final password = _passwordController.text.trim();
+  final email = _emailController.text.trim();
+  final password = _passwordController.text.trim();
 
-    if (email.isEmpty || password.isEmpty) {
-      _showMessage("Email and password are required");
-      return;
-    }
-
-    setState(() => _isLoading = true);
-
-    try {
-      final response = await Supabase.instance.client.auth.signInWithPassword(
-        email: email,
-        password: password,
-      );
-
-      if (response.user == null) {
-        throw "Invalid email or password";
-      }
-
-      setState(() => _isLoading = false);
-
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (_) => const WelcomeSuccessScreen(),
-        ),
-      );
-    } catch (e) {
-      setState(() => _isLoading = false);
-      _showMessage(e.toString());
-    }
+  if (email.isEmpty || password.isEmpty) {
+    _showMessage("Email and password are required");
+    return;
   }
+
+  setState(() => _isLoading = true);
+
+  try {
+    await Supabase.instance.client.auth.signInWithPassword(
+      email: email,
+      password: password,
+    );
+
+    // ✅ ALWAYS get current user AFTER login
+    final user = Supabase.instance.client.auth.currentUser;
+
+    if (user == null) {
+      throw "Login failed";
+    }
+
+    // ✅ Metadata FIX
+    final userName =
+        user.userMetadata?['name'] ??
+        user.userMetadata?['full_name'] ??
+        "User";
+
+    setState(() => _isLoading = false);
+
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (_) => WelcomeSuccessScreen(
+          userName: userName,
+        ),
+      ),
+    );
+  } catch (e) {
+    setState(() => _isLoading = false);
+    _showMessage(e.toString());
+  }
+}
+
 
   // 🧱 Reusable Input Field
   Widget _inputField({

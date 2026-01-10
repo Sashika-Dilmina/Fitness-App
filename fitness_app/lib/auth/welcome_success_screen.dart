@@ -2,7 +2,12 @@ import 'package:fitness_app/screens/home/home_dashboard_screen.dart';
 import 'package:flutter/material.dart';
 
 class WelcomeSuccessScreen extends StatelessWidget {
-  const WelcomeSuccessScreen({super.key});
+  final String userName;
+
+  const WelcomeSuccessScreen({
+    super.key,
+    required this.userName,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -13,7 +18,8 @@ class WelcomeSuccessScreen extends StatelessWidget {
       body: SafeArea(
         child: Center(
           child: Container(
-            width: size.width * 0.9, // 👈 wider card
+            width: size.width * 0.9,
+            height: size.height * 0.9, // 👈 full card height
             padding: const EdgeInsets.symmetric(
               horizontal: 24,
               vertical: 32,
@@ -23,11 +29,10 @@ class WelcomeSuccessScreen extends StatelessWidget {
               borderRadius: BorderRadius.circular(32),
             ),
             child: Column(
-              mainAxisSize: MainAxisSize.min,
               children: [
-                // 🖼️ Image (fits nicely)
+                // 🖼️ Image
                 SizedBox(
-                  height: size.height * 0.25,
+                  height: size.height * 0.35,
                   child: Image.asset(
                     'assets/images/welcome.png',
                     fit: BoxFit.contain,
@@ -36,10 +41,10 @@ class WelcomeSuccessScreen extends StatelessWidget {
 
                 const SizedBox(height: 24),
 
-                // 📝 Title
-                const Text(
-                  "Welcome, Sashika",
-                  style: TextStyle(
+                // 📝 Title with Name
+                Text(
+                  "Welcome, $userName",
+                  style: const TextStyle(
                     fontSize: 22,
                     fontWeight: FontWeight.bold,
                   ),
@@ -54,31 +59,32 @@ class WelcomeSuccessScreen extends StatelessWidget {
                   style: TextStyle(
                     color: Colors.black54,
                     height: 1.4,
+                    fontSize: 16,
                   ),
                   textAlign: TextAlign.center,
                 ),
 
-                const SizedBox(height: 32),
+                const Spacer(), // 👈 pushes button to bottom
 
                 // 🔵 Go To Home Button
                 SizedBox(
                   width: double.infinity,
                   height: 52,
                   child: ElevatedButton(
-                                  onPressed: () {
-                  Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => const HomeDashboardScreen(),
-                    ),
-                  );
-                },
-
+                    onPressed: () {
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const HomeDashboardScreen(),
+                        ),
+                      );
+                    },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF9EC9FF),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(30),
                       ),
+                      elevation: 0,
                     ),
                     child: const Text(
                       "Go To Home",
