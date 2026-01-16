@@ -10,14 +10,20 @@ class CompleteProfileScreen extends StatefulWidget {
 }
 
 class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
+  final supabase = Supabase.instance.client;
+
   String? _gender;
   DateTime? _dob;
 
+  final TextEditingController _nameController = TextEditingController();
   final TextEditingController _weightController = TextEditingController();
   final TextEditingController _heightController = TextEditingController();
 
+  bool _loading = false;
+
   @override
   void dispose() {
+    _nameController.dispose();
     _weightController.dispose();
     _heightController.dispose();
     super.dispose();
@@ -56,7 +62,19 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
 
               const SizedBox(height: 30),
 
-              // Gender
+              /* ================= NAME ================= */
+
+              TextField(
+                controller: _nameController,
+                decoration: _inputDecoration(Icons.person).copyWith(
+                  hintText: "Your Name",
+                ),
+              ),
+
+              const SizedBox(height: 16),
+
+              /* ================= GENDER ================= */
+
               DropdownButtonFormField<String>(
                 value: _gender,
                 hint: const Text("Choose Gender"),
@@ -70,12 +88,14 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
 
               const SizedBox(height: 16),
 
-              // DOB
+              /* ================= DOB ================= */
+
               GestureDetector(
                 onTap: _pickDate,
                 child: AbsorbPointer(
                   child: TextField(
-                    decoration: _inputDecoration(Icons.calendar_today).copyWith(
+                    decoration:
+                        _inputDecoration(Icons.calendar_today).copyWith(
                       hintText: _dob == null
                           ? "Date of Birth"
                           : "${_dob!.day}/${_dob!.month}/${_dob!.year}",
@@ -86,6 +106,8 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
 
               const SizedBox(height: 16),
 
+              /* ================= WEIGHT ================= */
+
               _numberField(
                 controller: _weightController,
                 hint: "Your Weight",
@@ -93,6 +115,8 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
               ),
 
               const SizedBox(height: 16),
+
+              /* ================= HEIGHT ================= */
 
               _numberField(
                 controller: _heightController,
@@ -102,18 +126,27 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
 
               const SizedBox(height: 32),
 
+              /* ================= SUBMIT ================= */
+
               SizedBox(
                 width: double.infinity,
                 height: 52,
                 child: ElevatedButton(
-                  onPressed: _submitProfile,
+                  onPressed: _loading ? null : _submitProfile,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF9EC9FF),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(30),
                     ),
                   ),
-                  child: const Text("Next", style: TextStyle(fontSize: 16)),
+                  child: _loading
+                      ? const CircularProgressIndicator(
+                          color: Colors.white,
+                        )
+                      : const Text(
+                          "Next",
+                          style: TextStyle(fontSize: 16),
+                        ),
                 ),
               ),
 
@@ -125,7 +158,8 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
     );
   }
 
-  // Date Picker
+  /* ================= DATE PICKER ================= */
+
   Future<void> _pickDate() async {
     final picked = await showDatePicker(
       context: context,
@@ -139,27 +173,8 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
     }
   }
 
-  // Number Field
-  Widget _numberField({
-    required TextEditingController controller,
-    required String hint,
-    required String unit,
-  }) {
-    return TextField(
-      controller: controller,
-      keyboardType: const TextInputType.numberWithOptions(decimal: true),
-      decoration: _inputDecoration(Icons.monitor_weight).copyWith(
-        hintText: hint,
-        suffixText: unit,
-        suffixStyle: const TextStyle(
-          fontWeight: FontWeight.bold,
-          color: Colors.black54,
-        ),
-      ),
-    );
-  }
+  /* ================= INPUT DECORATION ================= */
 
-  // Input Decoration
   InputDecoration _inputDecoration(IconData icon) {
     return InputDecoration(
       prefixIcon: Icon(icon),
@@ -172,36 +187,68 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
     );
   }
 
-  // Submit Profile
+  /* ================= NUMBER FIELD ================= */
+
+  Widget _numberField({
+    required TextEditingController controller,
+    required String hint,
+    required String unit,
+  }) {
+    return TextField(
+      controller: controller,
+      keyboardType: TextInputType.number,
+      decoration: _inputDecoration(Icons.monitor_weight).copyWith(
+        hintText: hint,
+        suffixText: unit,
+        suffixStyle: const TextStyle(
+          fontWeight: FontWeight.bold,
+          color: Colors.black54,
+        ),
+      ),
+    );
+  }
+
+  /* ================= SUBMIT LOGIC ================= */
+
   Future<void> _submitProfile() async {
-    if (_gender == null || _dob == null) {
-      _showMessage("Please complete all fields");
-      return;
-    }
-
-    final weight = double.tryParse(_weightController.text);
-    final height = double.tryParse(_heightController.text);
-
-    if (weight == null || height == null) {
-      _showMessage("Enter valid height and weight");
-      return;
-    }
-
-    final user = Supabase.instance.client.auth.currentUser;
+    final user = supabase.auth.currentUser;
 
     if (user == null) {
       _showMessage("User not logged in");
       return;
     }
 
+    final displayName = _nameController.text.trim();
+    final weight = double.tryParse(_weightController.text);
+    final height = double.tryParse(_heightController.text);
+
+    if (displayName.isEmpty ||
+        _gender == null ||
+        _dob == null ||
+        weight == null ||
+        height == null) {
+      _showMessage("Please complete all fields");
+      return;
+    }
+
+    setState(() => _loading = true);
+
     try {
-      await Supabase.instance.client.from('profiles').insert({
-        'user_id': user.id,
+      /* 🔥 UPDATE existing profile (NO INSERT) */
+      await supabase.from('profiles').update({
+        'display_name': displayName,
         'gender': _gender,
         'dob': _dob!.toIso8601String(),
         'weight': weight,
         'height': height,
-      });
+      }).eq('user_id', user.id);
+
+      /* Optional: save name in auth metadata */
+      await supabase.auth.updateUser(
+        UserAttributes(data: {'display_name': displayName}),
+      );
+
+      if (!mounted) return;
 
       Navigator.pushReplacement(
         context,
@@ -209,12 +256,14 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
       );
     } catch (e) {
       _showMessage("Failed to save profile");
+    } finally {
+      setState(() => _loading = false);
     }
   }
 
-  void _showMessage(String message) {
+  void _showMessage(String msg) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message)),
+      SnackBar(content: Text(msg)),
     );
   }
 }
