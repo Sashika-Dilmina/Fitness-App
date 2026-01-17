@@ -1,3 +1,4 @@
+import 'package:fitness_app/screens/sleep/sleep_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:fitness_app/screens/meals/meal_planner_screen.dart';
 import '../workout/workout_view.dart';
@@ -116,7 +117,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
       case 2:
         return const MealPlannerScreen();
       case 3:
-        return const Center(child: Text("Sleep Screen"));
+        return const SleepScreen();;
       default:
         return const SizedBox();
     }
@@ -246,7 +247,7 @@ class _HomeContent extends StatelessWidget {
           const SizedBox(height: 6),
           const Text(
             "Let’s track your daily activities",
-            style: TextStyle(fontSize: 18,color: Colors.black54),
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black54 ),
           ),
 
           /// 🔥 Push cards to vertical center
