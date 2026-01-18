@@ -1,4 +1,4 @@
-import 'package:fitness_app/screens/sleep/sleep_screen.dart';
+import 'package:fitness_app/screens/sleep_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:fitness_app/screens/meals/meal_planner_screen.dart';
 import '../workout/workout_view.dart';
@@ -117,7 +117,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
       case 2:
         return const MealPlannerScreen();
       case 3:
-        return const SleepScreen();;
+        return const SleepScreen();
       default:
         return const SizedBox();
     }
@@ -269,25 +269,25 @@ class _HomeContent extends StatelessWidget {
                   _DashboardCard(
                     title: "Workout",
                     icon: Icons.fitness_center,
-                    color: const Color(0xFF9EC9FF),
+                    color: const Color.fromARGB(255, 45, 98, 164),
                     onTap: onWorkoutTap,
                   ),
                   _DashboardCard(
                     title: "Meals",
                     icon: Icons.restaurant,
-                    color: const Color(0xFFFFC7A6),
+                    color: const Color.fromARGB(255, 201, 108, 54),
                     onTap: onMealsTap,
                   ),
                   _DashboardCard(
                     title: "Sleep",
                     icon: Icons.bedtime,
-                    color: const Color(0xFFB5EAD7),
+                    color: const Color.fromARGB(255, 47, 146, 110),
                     onTap: onSleepTap,
                   ),
                   _DashboardCard(
                     title: "Profile",
                     icon: Icons.person,
-                    color: const Color(0xFFD6B4F8),
+                    color: const Color.fromARGB(255, 60, 34, 86),
                     onTap: onProfileTap,
                   ),
                 ];

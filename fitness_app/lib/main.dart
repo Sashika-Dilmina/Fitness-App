@@ -1,14 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'screens/welcome_screen.dart';
+import 'services/notification_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  await Supabase.initialize(
+ await Supabase.initialize(
     url: 'https://jptmxatqufwopvjqczgq.supabase.co',
     anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpwdG14YXRxdWZ3b3B2anFjemdxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc5ODM3NTksImV4cCI6MjA4MzU1OTc1OX0.Mljt29sscMTJqn-_gs7ZP0aw5EGKk2k11Ya4KwJEIc8',
   );
+
+  await NotificationService.init();
+  await NotificationService.requestPermission();
 
   runApp(const MyApp());
 }
