@@ -1,3 +1,4 @@
+import 'package:fitness_app/member/assigned_workouts_screen.dart';
 import 'package:fitness_app/screens/sleep/sleep_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:fitness_app/screens/meals/meal_planner_screen.dart';
@@ -122,7 +123,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
           },
         );
       case 1:
-        return WorkoutView(key: workoutKey);
+        return const AssignedWorkoutsScreen();
       case 2:
         return const MealPlannerScreen();
       case 3:

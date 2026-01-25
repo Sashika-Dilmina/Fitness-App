@@ -1,3 +1,4 @@
+import 'package:fitness_app/trainer/member_details_screen.dart';
 import 'package:flutter/material.dart';
 import '../services/trainer_service.dart';
 
@@ -9,18 +10,7 @@ class MembersScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: const Color(0xFFF6F7FB),
 
-      /* ================= APP BAR ================= */
-      appBar: AppBar(
-        title: const Text(
-          "My Members",
-          style: TextStyle(
-            fontWeight: FontWeight.w700,
-            fontSize: 18,
-          ),
-        ),
-        centerTitle: true,
-      ),
-
+    
       /* ================= BODY ================= */
       body: FutureBuilder<List<Map<String, dynamic>>>(
         future: TrainerService().getMyMembers(),
@@ -64,12 +54,17 @@ class MembersScreen extends StatelessWidget {
               return _MemberCard(
                 name: profile['display_name'] ?? 'Unknown',
                 onTap: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text("Member details coming soon"),
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => MemberDetailsScreen(
+                        memberId: member['member_id'],
+                        memberName: member['profiles']['display_name'],
+                      ),
                     ),
                   );
                 },
+
               );
             },
           );

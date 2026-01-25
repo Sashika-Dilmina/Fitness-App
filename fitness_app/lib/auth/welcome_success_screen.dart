@@ -13,7 +13,7 @@ class _WelcomeSuccessScreenState extends State<WelcomeSuccessScreen> {
   final supabase = Supabase.instance.client;
 
   String _displayName = "User";
-  String _role = "member"; // 👈 NEW
+  String _role = "member";
   bool _loading = true;
 
   @override
@@ -59,14 +59,15 @@ class _WelcomeSuccessScreenState extends State<WelcomeSuccessScreen> {
             children: [
               /// Illustration
               SizedBox(
-                height: size.height * 0.45,
+                height: size.height * 0.4, // slightly smaller image
                 child: Image.asset(
                   'assets/images/welcome.png',
                   fit: BoxFit.contain,
                 ),
               ),
 
-              const SizedBox(height: 32),
+              /// Push text slightly downward
+              const Spacer(flex: 1),
 
               /// Title
               _loading
@@ -84,20 +85,21 @@ class _WelcomeSuccessScreenState extends State<WelcomeSuccessScreen> {
 
               const SizedBox(height: 12),
 
-              /// Subtitle (ROLE-BASED)
+              /// Subtitle
               Text(
                 isTrainer
                     ? "You’re all set to guide, train, and track\nyour members’ progress."
                     : "You are all set now, let’s reach your\ngoals together with us",
                 style: const TextStyle(
-                  fontSize: 15,
+                  fontSize: 18,
                   color: Colors.black54,
                   height: 1.5,
                 ),
                 textAlign: TextAlign.center,
               ),
 
-              const Spacer(),
+              /// Push button to bottom
+              const Spacer(flex: 2),
 
               /// Button
               SizedBox(
