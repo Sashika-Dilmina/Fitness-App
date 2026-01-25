@@ -165,55 +165,40 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  // 🔐 SUPABASE LOGIN LOGIC
+  // 🔐 SUPABASE LOGIN LOGIC (FIXED)
   Future<void> _loginUser() async {
-  if (_isLoading) return;
+    if (_isLoading) return;
 
-  final email = _emailController.text.trim();
-  final password = _passwordController.text.trim();
+    final email = _emailController.text.trim();
+    final password = _passwordController.text.trim();
 
-  if (email.isEmpty || password.isEmpty) {
-    _showMessage("Email and password are required");
-    return;
-  }
-
-  setState(() => _isLoading = true);
-
-  try {
-    await Supabase.instance.client.auth.signInWithPassword(
-      email: email,
-      password: password,
-    );
-
-    // ✅ ALWAYS get current user AFTER login
-    final user = Supabase.instance.client.auth.currentUser;
-
-    if (user == null) {
-      throw "Login failed";
+    if (email.isEmpty || password.isEmpty) {
+      _showMessage("Email and password are required");
+      return;
     }
 
-    // ✅ Metadata FIX
-    final userName =
-        user.userMetadata?['name'] ??
-        user.userMetadata?['full_name'] ??
-        "User";
+    setState(() => _isLoading = true);
 
-    setState(() => _isLoading = false);
+    try {
+      await Supabase.instance.client.auth.signInWithPassword(
+        email: email,
+        password: password,
+      );
 
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(
-        builder: (_) => WelcomeSuccessScreen(
-          userName: userName,
+      setState(() => _isLoading = false);
+
+      // ✅ DO NOT pass name or role here
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (_) => const WelcomeSuccessScreen(),
         ),
-      ),
-    );
-  } catch (e) {
-    setState(() => _isLoading = false);
-    _showMessage(e.toString());
+      );
+    } catch (e) {
+      setState(() => _isLoading = false);
+      _showMessage(e.toString());
+    }
   }
-}
-
 
   // 🧱 Reusable Input Field
   Widget _inputField({

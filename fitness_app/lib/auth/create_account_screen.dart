@@ -1,7 +1,8 @@
+import 'package:fitness_app/auth/auth_gate.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'complete_profile_screen.dart';
 import 'login_screen.dart';
+import 'complete_profile_screen.dart';
 
 class CreateAccountScreen extends StatefulWidget {
   const CreateAccountScreen({super.key});
@@ -19,6 +20,9 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
   bool _isLoading = false;
   bool _obscurePassword = true;
   bool _acceptTerms = false;
+
+  // 🔑 ROLE (IMPORTANT)
+  String _selectedRole = 'member';
 
   @override
   void dispose() {
@@ -47,9 +51,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                 "Hey there 👋",
                 style: TextStyle(fontSize: 14, color: Colors.black54),
               ),
-
               const SizedBox(height: 6),
-
               const Text(
                 "Create an Account",
                 style: TextStyle(
@@ -65,7 +67,6 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                 hint: "First Name",
                 icon: Icons.person_outline,
               ),
-
               const SizedBox(height: 16),
 
               _inputField(
@@ -73,7 +74,6 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                 hint: "Last Name",
                 icon: Icons.person_outline,
               ),
-
               const SizedBox(height: 16),
 
               _inputField(
@@ -81,7 +81,6 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                 hint: "Email Address",
                 icon: Icons.email_outlined,
               ),
-
               const SizedBox(height: 16),
 
               _inputField(
@@ -98,6 +97,44 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                   onPressed: () {
                     setState(() => _obscurePassword = !_obscurePassword);
                   },
+                ),
+              ),
+
+              // 🔹 SELECT ROLE (THIS IS WHAT YOU WERE MISSING)
+              const SizedBox(height: 24),
+              const Text(
+                "Select Role",
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 10),
+
+              Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Column(
+                  children: [
+                    RadioListTile<String>(
+                      title: const Text("Member"),
+                      value: 'member',
+                      groupValue: _selectedRole,
+                      onChanged: (value) {
+                        setState(() => _selectedRole = value!);
+                      },
+                    ),
+                    RadioListTile<String>(
+                      title: const Text("Trainer"),
+                      value: 'trainer',
+                      groupValue: _selectedRole,
+                      onChanged: (value) {
+                        setState(() => _selectedRole = value!);
+                      },
+                    ),
+                  ],
                 ),
               ),
 
@@ -176,7 +213,6 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                       fontSize: 16,
                       color: Colors.blue,
                       fontWeight: FontWeight.bold,
-                      
                     ),
                   ),
                 ),
@@ -190,7 +226,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
     );
   }
 
-  // 🔐 SUPABASE REGISTER LOGIC
+  // 🔐 REGISTER USER WITH ROLE
   Future<void> _registerUser() async {
     if (_isLoading) return;
 
@@ -218,6 +254,11 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
       final response = await Supabase.instance.client.auth.signUp(
         email: email,
         password: password,
+        data: {
+          'display_name':
+              '${_firstNameController.text.trim()} ${_lastNameController.text.trim()}',
+          'role': _selectedRole,
+        },
       );
 
       if (response.user == null) {
@@ -226,19 +267,17 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
 
       setState(() => _isLoading = false);
 
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (_) => const CompleteProfileScreen(),
-        ),
-      );
+     Navigator.of(context).pushAndRemoveUntil(
+  MaterialPageRoute(builder: (_) => const AuthGate()),
+  (route) => false,
+);
+
     } catch (e) {
       setState(() => _isLoading = false);
       _showMessage(e.toString());
     }
   }
 
-  // 🧱 Modern Input Field
   Widget _inputField({
     required TextEditingController controller,
     required String hint,

@@ -1,8 +1,9 @@
-import 'package:fitness_app/screens/sleep_screen.dart';
+import 'package:fitness_app/screens/sleep/sleep_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:fitness_app/screens/meals/meal_planner_screen.dart';
 import '../workout/workout_view.dart';
 import '../workout/workout_chart_screen.dart';
+import '../../services/auth_service.dart';
 
 class HomeDashboardScreen extends StatefulWidget {
   const HomeDashboardScreen({super.key});
@@ -41,6 +42,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
           ),
         ),
         actions: [
+          // 📊 Workout chart
           if (_currentIndex == 1)
             IconButton(
               icon: const Icon(Icons.bar_chart_rounded),
@@ -54,6 +56,13 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
                 );
               },
             ),
+
+          // 🚪 Logout button (ALWAYS visible)
+          IconButton(
+            icon: const Icon(Icons.logout),
+            color: Colors.black,
+            onPressed: _confirmLogout,
+          ),
         ],
       ),
 
@@ -121,6 +130,36 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
       default:
         return const SizedBox();
     }
+  }
+
+  /* ================= LOGOUT ================= */
+
+  void _confirmLogout() {
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text("Logout"),
+        content: const Text("Are you sure you want to logout?"),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("Cancel"),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+            ),
+            onPressed: () async {
+              Navigator.pop(context); // close dialog
+              await AuthService().logout();
+              // 🚫 NO navigation here
+              // AuthGate will redirect automatically
+            },
+            child: const Text("Logout"),
+          ),
+        ],
+      ),
+    );
   }
 
   /* ================= ADD WORKOUT SHEET ================= */
@@ -217,7 +256,6 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
   }
 }
 
-
 /* ================= HOME CONTENT ================= */
 
 class _HomeContent extends StatelessWidget {
@@ -247,10 +285,13 @@ class _HomeContent extends StatelessWidget {
           const SizedBox(height: 6),
           const Text(
             "Let’s track your daily activities",
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black54 ),
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: Colors.black54,
+            ),
           ),
 
-          /// 🔥 Push cards to vertical center
           const Spacer(),
 
           SizedBox(
@@ -296,14 +337,12 @@ class _HomeContent extends StatelessWidget {
             ),
           ),
 
-          /// 🔥 Balance bottom spacing
           const Spacer(),
         ],
       ),
     );
   }
 }
-
 
 /* ================= DASHBOARD CARD ================= */
 
