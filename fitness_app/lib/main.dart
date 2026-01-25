@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'screens/welcome_screen.dart';
+
 import 'services/notification_service.dart';
 import 'auth/auth_gate.dart';
 

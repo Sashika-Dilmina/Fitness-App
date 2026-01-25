@@ -1,268 +1,136 @@
 import 'package:flutter/material.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../services/member_workout_service.dart';
 
 class WorkoutView extends StatefulWidget {
   const WorkoutView({super.key});
 
   @override
-  State<WorkoutView> createState() => WorkoutViewState();
+  State<WorkoutView> createState() => _WorkoutViewState();
 }
 
-class WorkoutViewState extends State<WorkoutView> {
-  final supabase = Supabase.instance.client;
+class _WorkoutViewState extends State<WorkoutView> {
+  final _service = MemberWorkoutService();
 
-  List<Map<String, dynamic>> _workouts = [];
-  bool _loading = true;
+  // ✅ Store future once
+  late Future<List<Map<String, dynamic>>> _assignedWorkoutsFuture;
 
   @override
   void initState() {
     super.initState();
-    _fetchWorkouts();
+    print("🔥 WorkoutView initState called");
+
+    _assignedWorkoutsFuture = _service.getAssignedWorkouts();
   }
 
-  /* ================= FETCH ================= */
+  @override
+  Widget build(BuildContext context) {
+    print("🔥 WorkoutView build called");
 
-  Future<void> _fetchWorkouts() async {
-    final user = supabase.auth.currentUser;
-    if (user == null) return;
+    return FutureBuilder<List<Map<String, dynamic>>>(
+      future: _assignedWorkoutsFuture,
+      builder: (context, snapshot) {
+        // 🔎 Debug snapshot state
+        print("🧪 Snapshot state: ${snapshot.connectionState}");
+        print("🧪 Snapshot data: ${snapshot.data}");
 
-    final data = await supabase
-        .from('workouts')
-        .select()
-        .eq('user_id', user.id)
-        .order('created_at', ascending: false);
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
 
-    if (!mounted) return;
+        if (snapshot.hasError) {
+          return Center(
+            child: Text(
+              "Error: ${snapshot.error}",
+              style: const TextStyle(color: Colors.red),
+            ),
+          );
+        }
 
-    setState(() {
-      _workouts = List<Map<String, dynamic>>.from(data);
-      _loading = false;
-    });
-  }
+        final data = snapshot.data ?? [];
 
-  /* ================= ADD ================= */
+        if (data.isEmpty) {
+          return const Center(
+            child: Text(
+              "No workouts assigned yet",
+              style: TextStyle(color: Colors.black54),
+            ),
+          );
+        }
 
-  Future<void> addWorkout(String name, int minutes) async {
-    final user = supabase.auth.currentUser;
-    if (user == null) return;
+        return ListView.builder(
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 120),
+          itemCount: data.length,
+          itemBuilder: (context, index) {
+            final item = data[index];
+            final workout = item['workouts'];
 
-    await supabase.from('workouts').insert({
-      'user_id': user.id,
-      'name': name,
-      'minutes': minutes,
-    });
+            if (workout == null) {
+              print("⚠️ Workout is NULL at index $index");
+              return const SizedBox();
+            }
 
-    _fetchWorkouts();
-  }
-
-  /* ================= UPDATE ================= */
-
-  Future<void> updateWorkout(String id, String name, int minutes) async {
-    await supabase
-        .from('workouts')
-        .update({'name': name, 'minutes': minutes})
-        .eq('id', id);
-
-    _fetchWorkouts();
-  }
-
-  /* ================= DELETE ================= */
-
-  Future<void> deleteWorkout(String id) async {
-    await supabase.from('workouts').delete().eq('id', id);
-    _fetchWorkouts();
-  }
-
-  /* ================= EDIT SHEET ================= */
-
-  void _showEditSheet(Map<String, dynamic> workout) {
-    final nameCtrl = TextEditingController(text: workout['name']);
-    final minCtrl =
-        TextEditingController(text: workout['minutes'].toString());
-
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (_) {
-        return Padding(
-          padding: EdgeInsets.fromLTRB(
-            20,
-            20,
-            20,
-            MediaQuery.of(context).viewInsets.bottom + 20,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Text(
-                "Edit Workout",
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            return Container(
+              margin: const EdgeInsets.only(bottom: 12),
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black12.withOpacity(0.05),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
               ),
-              const SizedBox(height: 20),
-
-              TextField(
-                controller: nameCtrl,
-                decoration: const InputDecoration(
-                  labelText: "Workout name",
-                ),
-              ),
-              const SizedBox(height: 12),
-
-              TextField(
-                controller: minCtrl,
-                keyboardType: TextInputType.number,
-                decoration: const InputDecoration(
-                  labelText: "Duration (minutes)",
-                ),
-              ),
-              const SizedBox(height: 24),
-
-              SizedBox(
-                width: double.infinity,
-                height: 50,
-                child: ElevatedButton(
-                  onPressed: () {
-                    final name = nameCtrl.text.trim();
-                    final min = int.tryParse(minCtrl.text);
-
-                    if (name.isEmpty || min == null) return;
-
-                    updateWorkout(workout['id'], name, min);
-                    Navigator.pop(context);
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF9EC9FF),
-                    shape: RoundedRectangleBorder(
+              child: Row(
+                children: [
+                  Container(
+                    width: 48,
+                    height: 48,
+                    decoration: BoxDecoration(
+                      color: Colors.blue.withOpacity(0.15),
                       borderRadius: BorderRadius.circular(14),
                     ),
+                    child: const Icon(Icons.fitness_center),
                   ),
-                  child: const Text("Update"),
-                ),
+                  const SizedBox(width: 14),
+
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          workout['name'],
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          workout['description'] ?? '',
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(color: Colors.black54),
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          "${workout['minutes']} min",
+                          style: const TextStyle(
+                            fontSize: 13,
+                            color: Colors.black45,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
-            ],
-          ),
+            );
+          },
         );
       },
-    );
-  }
-
-  /* ================= UI ================= */
-
-  @override
-  Widget build(BuildContext context) {
-    if (_loading) {
-      return const Center(child: CircularProgressIndicator());
-    }
-
-    if (_workouts.isEmpty) {
-      return const _EmptyState();
-    }
-
-    return ListView.builder(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 120),
-      itemCount: _workouts.length,
-      itemBuilder: (context, index) {
-        final w = _workouts[index];
-
-        return Container(
-          margin: const EdgeInsets.only(bottom: 12),
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black12.withOpacity(0.05),
-                blurRadius: 10,
-                offset: const Offset(0, 4),
-              ),
-            ],
-          ),
-          child: Row(
-            children: [
-              Container(
-                width: 48,
-                height: 48,
-                decoration: BoxDecoration(
-                  color: const Color(0xFF9EC9FF).withOpacity(0.15),
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                child: const Icon(
-                  Icons.fitness_center,
-                  color: Color(0xFF9EC9FF),
-                ),
-              ),
-              const SizedBox(width: 14),
-
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      w['name'],
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      "${w['minutes']} min",
-                      style: const TextStyle(
-                        fontSize: 14,
-                        color: Colors.black54,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              IconButton(
-                icon: const Icon(Icons.edit_outlined),
-                onPressed: () => _showEditSheet(w),
-              ),
-              IconButton(
-                icon: const Icon(
-                  Icons.delete_outline,
-                  color: Colors.redAccent,
-                ),
-                onPressed: () => deleteWorkout(w['id']),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-}
-
-/* ================= EMPTY STATE ================= */
-
-class _EmptyState extends StatelessWidget {
-  const _EmptyState();
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: const [
-          Icon(Icons.fitness_center, size: 60, color: Colors.black26),
-          SizedBox(height: 16),
-          Text(
-            "No workouts yet",
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-          ),
-          SizedBox(height: 8),
-          Text(
-            "Tap + to add your first workout",
-            style: TextStyle(color: Colors.black45),
-          ),
-        ],
-      ),
     );
   }
 }

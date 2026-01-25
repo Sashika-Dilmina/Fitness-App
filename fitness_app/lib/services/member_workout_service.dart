@@ -5,24 +5,33 @@ class MemberWorkoutService {
 
   Future<List<Map<String, dynamic>>> getAssignedWorkouts() async {
     final user = _supabase.auth.currentUser;
+    if (user == null) {
+      print("❌ No logged-in user");
+      return [];
+    }
 
-    if (user == null) return [];
-
-    final response = await _supabase
-        .from('workout_assignments')
-        .select('''
-          id,
-          assigned_at,
-          workouts (
+    try {
+      final response = await _supabase
+          .from('workout_assignments')
+          .select('''
             id,
-            name,
-            description,
-            minutes
-          )
-        ''')
-        .eq('member_id', user.id)
-        .order('assigned_at', ascending: false);
+            workouts:workout_id (
+              id,
+              name,
+              minutes,
+              description
+            )
+          ''')
+          .eq('member_id', user.id)
+          .order('created_at', ascending: false);
 
-    return List<Map<String, dynamic>>.from(response);
+      print("✅ ASSIGNED RESPONSE: $response");
+
+      // 🔑 IMPORTANT: always return a LIST
+      return List<Map<String, dynamic>>.from(response);
+    } catch (e) {
+      print("❌ ERROR fetching assigned workouts: $e");
+      return [];
+    }
   }
 }

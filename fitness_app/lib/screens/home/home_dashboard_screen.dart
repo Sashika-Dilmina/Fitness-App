@@ -1,7 +1,6 @@
-import 'package:fitness_app/member/assigned_workouts_screen.dart';
-import 'package:fitness_app/screens/sleep/sleep_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:fitness_app/screens/meals/meal_planner_screen.dart';
+import 'package:fitness_app/screens/sleep/sleep_screen.dart';
 import '../workout/workout_view.dart';
 import '../workout/workout_chart_screen.dart';
 import '../../services/auth_service.dart';
@@ -15,7 +14,6 @@ class HomeDashboardScreen extends StatefulWidget {
 
 class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
   int _currentIndex = 0;
-  final workoutKey = GlobalKey<WorkoutViewState>();
 
   final List<String> _titles = [
     "Home",
@@ -43,11 +41,9 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
           ),
         ),
         actions: [
-          // 📊 Workout chart
           if (_currentIndex == 1)
             IconButton(
               icon: const Icon(Icons.bar_chart_rounded),
-              color: Colors.black,
               onPressed: () {
                 Navigator.push(
                   context,
@@ -58,10 +54,8 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
               },
             ),
 
-          // 🚪 Logout button (ALWAYS visible)
           IconButton(
             icon: const Icon(Icons.logout),
-            color: Colors.black,
             onPressed: _confirmLogout,
           ),
         ],
@@ -70,19 +64,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
       /* ================= BODY ================= */
       body: _buildBody(),
 
-      /* ================= FAB ================= */
-      floatingActionButton: _currentIndex == 1
-          ? FloatingActionButton(
-              backgroundColor: const Color(0xFF9EC9FF),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(18),
-              ),
-              onPressed: () {
-                _showAddWorkoutSheet(context);
-              },
-              child: const Icon(Icons.add, size: 28),
-            )
-          : null,
+      /* ❌ NO FAB FOR MEMBERS */
 
       /* ================= BOTTOM NAV ================= */
       bottomNavigationBar: BottomNavigationBar(
@@ -90,9 +72,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
         selectedItemColor: const Color(0xFF9EC9FF),
         unselectedItemColor: Colors.grey,
         type: BottomNavigationBarType.fixed,
-        onTap: (index) {
-          setState(() => _currentIndex = index);
-        },
+        onTap: (index) => setState(() => _currentIndex = index),
         items: const [
           BottomNavigationBarItem(
               icon: Icon(Icons.home_rounded), label: "Home"),
@@ -122,12 +102,16 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
             );
           },
         );
+
       case 1:
-        return const AssignedWorkoutsScreen();
+        return const WorkoutView(); // ✅ ASSIGNED WORKOUTS ONLY
+
       case 2:
         return const MealPlannerScreen();
+
       case 3:
         return const SleepScreen();
+
       default:
         return const SizedBox();
     }
@@ -147,111 +131,14 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
             child: const Text("Cancel"),
           ),
           ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
-            ),
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
             onPressed: () async {
-              Navigator.pop(context); // close dialog
+              Navigator.pop(context);
               await AuthService().logout();
-              // 🚫 NO navigation here
-              // AuthGate will redirect automatically
             },
             child: const Text("Logout"),
           ),
         ],
-      ),
-    );
-  }
-
-  /* ================= ADD WORKOUT SHEET ================= */
-
-  void _showAddWorkoutSheet(BuildContext context) {
-    final nameCtrl = TextEditingController();
-    final minCtrl = TextEditingController();
-
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
-      ),
-      builder: (_) {
-        return Padding(
-          padding: EdgeInsets.fromLTRB(
-            20,
-            24,
-            20,
-            MediaQuery.of(context).viewInsets.bottom + 24,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                height: 5,
-                width: 50,
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade300,
-                  borderRadius: BorderRadius.circular(10),
-                ),
-              ),
-              const SizedBox(height: 24),
-              const Text(
-                "Add Workout",
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 24),
-
-              TextField(
-                controller: nameCtrl,
-                decoration: _inputDecoration("Workout name"),
-              ),
-              const SizedBox(height: 16),
-
-              TextField(
-                controller: minCtrl,
-                keyboardType: TextInputType.number,
-                decoration: _inputDecoration("Duration (minutes)"),
-              ),
-              const SizedBox(height: 28),
-
-              SizedBox(
-                width: double.infinity,
-                height: 52,
-                child: ElevatedButton(
-                  onPressed: () {
-                    final name = nameCtrl.text.trim();
-                    final min = int.tryParse(minCtrl.text);
-                    if (name.isEmpty || min == null) return;
-                    workoutKey.currentState?.addWorkout(name, min);
-                    Navigator.pop(context);
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF9EC9FF),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                  ),
-                  child: const Text(
-                    "Save Workout",
-                    style: TextStyle(fontSize: 16),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  InputDecoration _inputDecoration(String label) {
-    return InputDecoration(
-      labelText: label,
-      filled: true,
-      fillColor: const Color(0xFFF6F7FB),
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(14),
-        borderSide: BorderSide.none,
       ),
     );
   }
@@ -295,47 +182,39 @@ class _HomeContent extends StatelessWidget {
 
           const Spacer(),
 
-          SizedBox(
-            height: MediaQuery.of(context).size.height * 0.48,
-            child: GridView.builder(
-              physics: const NeverScrollableScrollPhysics(),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                crossAxisSpacing: 16,
-                mainAxisSpacing: 16,
-                childAspectRatio: 0.95,
+          GridView.count(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            crossAxisCount: 2,
+            crossAxisSpacing: 16,
+            mainAxisSpacing: 16,
+            childAspectRatio: 0.95,
+            children: [
+              _DashboardCard(
+                title: "Workout",
+                icon: Icons.fitness_center,
+                color: Colors.blue,
+                onTap: onWorkoutTap,
               ),
-              itemCount: 4,
-              itemBuilder: (context, index) {
-                final cards = [
-                  _DashboardCard(
-                    title: "Workout",
-                    icon: Icons.fitness_center,
-                    color: const Color.fromARGB(255, 45, 98, 164),
-                    onTap: onWorkoutTap,
-                  ),
-                  _DashboardCard(
-                    title: "Meals",
-                    icon: Icons.restaurant,
-                    color: const Color.fromARGB(255, 201, 108, 54),
-                    onTap: onMealsTap,
-                  ),
-                  _DashboardCard(
-                    title: "Sleep",
-                    icon: Icons.bedtime,
-                    color: const Color.fromARGB(255, 47, 146, 110),
-                    onTap: onSleepTap,
-                  ),
-                  _DashboardCard(
-                    title: "Profile",
-                    icon: Icons.person,
-                    color: const Color.fromARGB(255, 60, 34, 86),
-                    onTap: onProfileTap,
-                  ),
-                ];
-                return cards[index];
-              },
-            ),
+              _DashboardCard(
+                title: "Meals",
+                icon: Icons.restaurant,
+                color: Colors.orange,
+                onTap: onMealsTap,
+              ),
+              _DashboardCard(
+                title: "Sleep",
+                icon: Icons.bedtime,
+                color: Colors.green,
+                onTap: onSleepTap,
+              ),
+              _DashboardCard(
+                title: "Profile",
+                icon: Icons.person,
+                color: Colors.deepPurple,
+                onTap: onProfileTap,
+              ),
+            ],
           ),
 
           const Spacer(),
@@ -363,8 +242,8 @@ class _DashboardCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      borderRadius: BorderRadius.circular(22),
       onTap: onTap,
+      borderRadius: BorderRadius.circular(22),
       child: Container(
         decoration: BoxDecoration(
           color: color,
