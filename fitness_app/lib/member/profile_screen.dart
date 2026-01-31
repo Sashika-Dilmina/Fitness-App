@@ -232,9 +232,32 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   "Logout",
                   style: TextStyle(color: Colors.red),
                 ),
-                onPressed: () async {
+                              onPressed: () async {
+                final ok = await showDialog<bool>(
+                  context: context,
+                  builder: (_) => AlertDialog(
+                    title: const Text("Logout"),
+                    content: const Text("Are you sure you want to logout?"),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(context, false),
+                        child: const Text("Cancel"),
+                      ),
+                      ElevatedButton(
+                        onPressed: () => Navigator.pop(context, true),
+                        child: const Text("Logout"),
+                      ),
+                    ],
+                  ),
+                );
+
+                if (ok == true) {
                   await AuthService().logout();
-                },
+                  if (!mounted) return;
+                  Navigator.of(context).popUntil((route) => route.isFirst);
+                }
+              },
+
               ),
             ),
           ],
