@@ -3,6 +3,18 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 class MemberWorkoutService {
   final _supabase = Supabase.instance.client;
 
+  Future<void> markWorkoutCompleted(String assignmentId) async {
+  await _supabase
+      .from('workout_assignments')
+      .update({
+        'status': 'completed',
+        'completed_at': DateTime.now().toIso8601String(),
+      })
+      .eq('id', assignmentId);
+}
+
+
+
   Future<List<Map<String, dynamic>>> getAssignedWorkouts() async {
     final user = _supabase.auth.currentUser;
     if (user == null) {

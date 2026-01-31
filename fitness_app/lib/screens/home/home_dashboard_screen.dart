@@ -4,6 +4,8 @@ import 'package:fitness_app/screens/sleep/sleep_screen.dart';
 import '../workout/workout_view.dart';
 import '../workout/workout_chart_screen.dart';
 import '../../services/auth_service.dart';
+import 'package:fitness_app/member/profile_screen.dart';
+
 
 class HomeDashboardScreen extends StatefulWidget {
   const HomeDashboardScreen({super.key});
@@ -97,10 +99,14 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
           onMealsTap: () => setState(() => _currentIndex = 2),
           onSleepTap: () => setState(() => _currentIndex = 3),
           onProfileTap: () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text("Profile coming soon")),
-            );
-          },
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const ProfileScreen(),
+                  ),
+                );
+              },
+
         );
 
       case 1:

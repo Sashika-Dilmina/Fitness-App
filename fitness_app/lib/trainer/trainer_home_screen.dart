@@ -1,5 +1,6 @@
 import 'package:fitness_app/trainer/assign_workout_screen.dart';
 import 'package:fitness_app/trainer/create_workout_screen.dart';
+import 'package:fitness_app/trainer/member_progress_screen.dart';
 import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
 import 'members_screen.dart';
@@ -161,11 +162,19 @@ class TrainerDashboard extends StatelessWidget {
                   onTap: () => onCardTap(3),
                 ),
                 TrainerCard(
-                  title: "Progress",
-                  icon: Icons.bar_chart_rounded,
-                  color: const Color(0xFFF7B731),
-                  onTap: () {},
-                ),
+                    title: "Progress",
+                    icon: Icons.bar_chart_rounded,
+                    color: const Color(0xFFF7B731),
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const MemberProgressScreen(),
+                        ),
+                      );
+                    },
+                  ),
+
               ],
             ),
           ),
@@ -285,3 +294,4 @@ class _TrainerCardState extends State<TrainerCard> {
     );
   }
 }
+

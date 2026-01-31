@@ -14,9 +14,6 @@ class TrainerService {
         .eq('trainer_id', trainerId);
 
     // ✅ VERY IMPORTANT
-    if (response == null) {
-      return [];
-    }
 
     return List<Map<String, dynamic>>.from(response);
   }

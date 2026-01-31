@@ -11,14 +11,16 @@ class WorkoutView extends StatefulWidget {
 class _WorkoutViewState extends State<WorkoutView> {
   final _service = MemberWorkoutService();
 
-  // ✅ Store future once
   late Future<List<Map<String, dynamic>>> _assignedWorkoutsFuture;
 
   @override
   void initState() {
     super.initState();
     print("🔥 WorkoutView initState called");
+    _reload();
+  }
 
+  void _reload() {
     _assignedWorkoutsFuture = _service.getAssignedWorkouts();
   }
 
@@ -29,7 +31,6 @@ class _WorkoutViewState extends State<WorkoutView> {
     return FutureBuilder<List<Map<String, dynamic>>>(
       future: _assignedWorkoutsFuture,
       builder: (context, snapshot) {
-        // 🔎 Debug snapshot state
         print("🧪 Snapshot state: ${snapshot.connectionState}");
         print("🧪 Snapshot data: ${snapshot.data}");
 
@@ -69,6 +70,10 @@ class _WorkoutViewState extends State<WorkoutView> {
               return const SizedBox();
             }
 
+            final assignmentId = item['id'];
+            final status = item['status'] ?? 'pending';
+            final completedAt = item['completed_at'];
+
             return Container(
               margin: const EdgeInsets.only(bottom: 12),
               padding: const EdgeInsets.all(16),
@@ -83,48 +88,109 @@ class _WorkoutViewState extends State<WorkoutView> {
                   ),
                 ],
               ),
-              child: Row(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Container(
-                    width: 48,
-                    height: 48,
-                    decoration: BoxDecoration(
-                      color: Colors.blue.withOpacity(0.15),
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                    child: const Icon(Icons.fitness_center),
-                  ),
-                  const SizedBox(width: 14),
+                  /// TOP ROW
+                  Row(
+                    children: [
+                      Container(
+                        width: 48,
+                        height: 48,
+                        decoration: BoxDecoration(
+                          color: Colors.blue.withOpacity(0.15),
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                        child: const Icon(Icons.fitness_center),
+                      ),
+                      const SizedBox(width: 14),
 
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          workout['name'],
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              workout['name'],
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              "${workout['minutes']} min",
+                              style: const TextStyle(
+                                fontSize: 13,
+                                color: Colors.black45,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      /// STATUS BADGE
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: status == 'completed'
+                              ? Colors.green.withOpacity(0.15)
+                              : Colors.orange.withOpacity(0.15),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Text(
+                          status.toUpperCase(),
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.bold,
+                            color: status == 'completed'
+                                ? Colors.green
+                                : Colors.orange,
                           ),
                         ),
-                        const SizedBox(height: 4),
-                        Text(
-                          workout['description'] ?? '',
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(color: Colors.black54),
-                        ),
-                        const SizedBox(height: 6),
-                        Text(
-                          "${workout['minutes']} min",
-                          style: const TextStyle(
-                            fontSize: 13,
-                            color: Colors.black45,
-                          ),
-                        ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
+
+                  const SizedBox(height: 10),
+
+                  /// DESCRIPTION
+                  if (workout['description'] != null)
+                    Text(
+                      workout['description'],
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(color: Colors.black54),
+                    ),
+
+                  /// COMPLETED DATE
+                  if (completedAt != null) ...[
+                    const SizedBox(height: 6),
+                    Text(
+                      "Completed on ${DateTime.parse(completedAt).toLocal()}",
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: Colors.black45,
+                      ),
+                    ),
+                  ],
+
+                  /// COMPLETE BUTTON
+                  if (status == 'pending') ...[
+                    const SizedBox(height: 12),
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: TextButton(
+                        onPressed: () async {
+                          await _service.markWorkoutCompleted(assignmentId);
+                          setState(() {
+                            _reload();
+                          });
+                        },
+                        child: const Text("Mark Completed"),
+                      ),
+                    ),
+                  ],
                 ],
               ),
             );
