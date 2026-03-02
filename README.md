@@ -63,26 +63,26 @@ This system allows trainers to create and assign workouts while members can trac
 # 📂 Project Structure
 
 
-lib/
-│
-├── member/
-│ ├── workout_view.dart
-│ ├── profile_screen.dart
-│ └── assigned_workouts_screen.dart
-│
-├── trainer/
-│ ├── trainer_home_screen.dart
-│ ├── members_screen.dart
-│ ├── assign_workout_screen.dart
-│ └── create_workout_screen.dart
-│
-├── services/
-│ ├── auth_service.dart
-│ ├── member_workout_service.dart
-│ ├── trainer_service.dart
-│ └── assignment_service.dart
-│
-└── main.dart
+  lib/
+  │
+  ├── member/
+  │ ├── workout_view.dart
+  │ ├── profile_screen.dart
+  │ └── assigned_workouts_screen.dart
+  │
+  ├── trainer/
+  │ ├── trainer_home_screen.dart
+  │ ├── members_screen.dart
+  │ ├── assign_workout_screen.dart
+  │ └── create_workout_screen.dart
+  │
+  ├── services/
+  │ ├── auth_service.dart
+  │ ├── member_workout_service.dart
+  │ ├── trainer_service.dart
+  │ └── assignment_service.dart
+  │
+  └── main.dart
 
 
 ---
