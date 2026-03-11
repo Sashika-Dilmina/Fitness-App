@@ -1,3 +1,4 @@
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:fitness_app/trainer/assign_workout_screen.dart';
 import 'package:fitness_app/trainer/create_workout_screen.dart';
 import 'package:fitness_app/trainer/member_progress_screen.dart';
@@ -17,6 +18,29 @@ class TrainerHomeScreen extends StatefulWidget {
 
 class _TrainerHomeScreenState extends State<TrainerHomeScreen> {
   int _currentIndex = 0;
+  String _displayName = "";
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchProfile();
+  }
+
+  Future<void> _fetchProfile() async {
+    final user = Supabase.instance.client.auth.currentUser;
+    if (user != null) {
+      final data = await Supabase.instance.client
+          .from('profiles')
+          .select('display_name')
+          .eq('user_id', user.id)
+          .single();
+      if (mounted) {
+        setState(() {
+          _displayName = (data['display_name'] ?? "User").split(' ')[0];
+        });
+      }
+    }
+  }
 
   final List<String> _titles = [
     "Coach Dashboard",
@@ -98,6 +122,7 @@ class _TrainerHomeScreenState extends State<TrainerHomeScreen> {
       case 0:
         return TrainerDashboard(
           key: const ValueKey(0),
+          displayName: _displayName,
           onCardTap: (index) => setState(() => _currentIndex = index),
         );
       case 1:
@@ -113,9 +138,10 @@ class _TrainerHomeScreenState extends State<TrainerHomeScreen> {
 }
 
 class TrainerDashboard extends StatelessWidget {
+  final String displayName;
   final Function(int) onCardTap;
 
-  const TrainerDashboard({super.key, required this.onCardTap});
+  const TrainerDashboard({super.key, required this.displayName, required this.onCardTap});
 
   @override
   Widget build(BuildContext context) {
@@ -132,8 +158,11 @@ class TrainerDashboard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    "Welcome Coach 👋",
-                    style: Theme.of(context).textTheme.headlineMedium,
+                    "Welcome Coach ${displayName.isEmpty ? '' : displayName} 👋",
+                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: -0.5,
+                        ),
                   ),
                   const SizedBox(height: 4),
                   Text(

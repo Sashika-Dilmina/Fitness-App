@@ -1,6 +1,8 @@
 import 'package:fitness_app/auth/auth_gate.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:flutter_animate/flutter_animate.dart';
+import '../theme/app_theme.dart';
 import 'login_screen.dart';
 
 class CreateAccountScreen extends StatefulWidget {
@@ -20,7 +22,6 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
   bool _obscurePassword = true;
   bool _acceptTerms = false;
 
-  // 🔑 ROLE (IMPORTANT)
   String _selectedRole = 'member';
 
   @override
@@ -34,188 +35,199 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final size = MediaQuery.of(context).size;
-
     return Scaffold(
-      backgroundColor: const Color(0xFFF6F7FB),
+      backgroundColor: AppTheme.background,
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 24),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              SizedBox(height: size.height * 0.05),
-
-              const Text(
-                "Hey there 👋",
-                style: TextStyle(fontSize: 14, color: Colors.black54),
-              ),
-              const SizedBox(height: 6),
-              const Text(
-                "Create an Account",
-                style: TextStyle(
-                  fontSize: 26,
-                  fontWeight: FontWeight.bold,
+              const SizedBox(height: 20),
+              
+              IconButton(
+                onPressed: () => Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const LoginScreen())),
+                icon: const Icon(Icons.arrow_back_ios_new_rounded),
+                style: IconButton.styleFrom(
+                  backgroundColor: Colors.white,
+                  padding: const EdgeInsets.all(12),
                 ),
-              ),
+              ).animate().fadeIn().slideX(begin: -0.2),
 
               const SizedBox(height: 30),
 
-              _inputField(
-                controller: _firstNameController,
-                hint: "First Name",
-                icon: Icons.person_outline,
-              ),
-              const SizedBox(height: 16),
-
-              _inputField(
-                controller: _lastNameController,
-                hint: "Last Name",
-                icon: Icons.person_outline,
-              ),
-              const SizedBox(height: 16),
-
-              _inputField(
-                controller: _emailController,
-                hint: "Email Address",
-                icon: Icons.email_outlined,
-              ),
-              const SizedBox(height: 16),
-
-              _inputField(
-                controller: _passwordController,
-                hint: "Password",
-                icon: Icons.lock_outline,
-                obscure: _obscurePassword,
-                suffix: IconButton(
-                  icon: Icon(
-                    _obscurePassword
-                        ? Icons.visibility_off
-                        : Icons.visibility,
-                  ),
-                  onPressed: () {
-                    setState(() => _obscurePassword = !_obscurePassword);
-                  },
-                ),
-              ),
-
-              // 🔹 SELECT ROLE (THIS IS WHAT YOU WERE MISSING)
-              const SizedBox(height: 24),
-              const Text(
-                "Select Role",
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 10),
-
-              Container(
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Column(
-                  children: [
-                    RadioListTile<String>(
-                      title: const Text("Member"),
-                      value: 'member',
-                      groupValue: _selectedRole,
-                      onChanged: (value) {
-                        setState(() => _selectedRole = value!);
-                      },
-                    ),
-                    RadioListTile<String>(
-                      title: const Text("Trainer"),
-                      value: 'trainer',
-                      groupValue: _selectedRole,
-                      onChanged: (value) {
-                        setState(() => _selectedRole = value!);
-                      },
-                    ),
-                  ],
-                ),
-              ),
-
-              const SizedBox(height: 16),
-
-              Row(
+              Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Checkbox(
-                    value: _acceptTerms,
-                    activeColor: const Color(0xFF9EC9FF),
-                    onChanged: (value) {
-                      setState(() => _acceptTerms = value ?? false);
-                    },
+                  Text(
+                    "Hey there 👋,",
+                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                          color: AppTheme.textSecondary,
+                          fontSize: 16,
+                        ),
                   ),
-                  const Expanded(
-                    child: Padding(
-                      padding: EdgeInsets.only(top: 6),
-                      child: Text(
-                        "By continuing, you agree to our Privacy Policy and Terms of Use",
-                        style: TextStyle(fontSize: 14),
-                      ),
+                  const SizedBox(height: 8),
+                  Text(
+                    "Create an Account",
+                    style: Theme.of(context).textTheme.displaySmall,
+                  ),
+                ],
+              ).animate().fadeIn(delay: 100.ms).slideX(begin: -0.1),
+
+              const SizedBox(height: 32),
+
+              Row(
+                children: [
+                  Expanded(
+                    child: _inputField(
+                      controller: _firstNameController,
+                      label: "First Name",
+                      icon: Icons.person_outline_rounded,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: _inputField(
+                      controller: _lastNameController,
+                      label: "Last Name",
+                      icon: Icons.person_outline_rounded,
                     ),
                   ),
                 ],
-              ),
+              ).animate().fadeIn(delay: 200.ms).slideY(begin: 0.1),
 
-              const SizedBox(height: 25),
+              const SizedBox(height: 20),
 
-              SizedBox(
+              _inputField(
+                controller: _emailController,
+                label: "Email",
+                icon: Icons.email_outlined,
+              ).animate().fadeIn(delay: 300.ms).slideY(begin: 0.1),
+
+              const SizedBox(height: 20),
+
+              _inputField(
+                controller: _passwordController,
+                label: "Password",
+                icon: Icons.lock_outline_rounded,
+                obscure: _obscurePassword,
+                suffix: IconButton(
+                  icon: Icon(
+                    _obscurePassword ? Icons.visibility_off_rounded : Icons.visibility_rounded,
+                    color: AppTheme.primary.withOpacity(0.5),
+                  ),
+                  onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                ),
+              ).animate().fadeIn(delay: 400.ms).slideY(begin: 0.1),
+
+              const SizedBox(height: 32),
+
+              Text(
+                "Select Your Role",
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+              ).animate().fadeIn(delay: 500.ms),
+              const SizedBox(height: 16),
+
+              Row(
+                children: [
+                  Expanded(
+                    child: _roleCard(
+                      title: "Member",
+                      role: 'member',
+                      icon: Icons.fitness_center_rounded,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: _roleCard(
+                      title: "Trainer",
+                      role: 'trainer',
+                      icon: Icons.sports_rounded,
+                    ),
+                  ),
+                ],
+              ).animate().fadeIn(delay: 600.ms).scale(begin: const Offset(0.9, 0.9)),
+
+              const SizedBox(height: 24),
+
+              Row(
+                children: [
+                  SizedBox(
+                    height: 24,
+                    width: 24,
+                    child: Checkbox(
+                      value: _acceptTerms,
+                      activeColor: AppTheme.primary,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+                      onChanged: (value) => setState(() => _acceptTerms = value ?? false),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  const Expanded(
+                    child: Text(
+                      "By continuing, you agree to our Privacy Policy and Terms of Use",
+                      style: TextStyle(fontSize: 12, color: AppTheme.textSecondary),
+                    ),
+                  ),
+                ],
+              ).animate().fadeIn(delay: 700.ms),
+
+              const SizedBox(height: 40),
+
+              Container(
                 width: double.infinity,
-                height: 54,
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [AppTheme.primary, AppTheme.secondary],
+                    begin: Alignment.centerLeft,
+                    end: Alignment.centerRight,
+                  ),
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppTheme.primary.withOpacity(0.3),
+                      blurRadius: 15,
+                      offset: const Offset(0, 8),
+                    ),
+                  ],
+                ),
                 child: ElevatedButton(
                   onPressed: _isLoading ? null : _registerUser,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF9EC9FF),
-                    elevation: 4,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(30),
-                    ),
+                    backgroundColor: Colors.transparent,
+                    shadowColor: Colors.transparent,
+                    padding: const EdgeInsets.symmetric(vertical: 18),
                   ),
                   child: _isLoading
                       ? const SizedBox(
-                          width: 22,
-                          height: 22,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: Colors.white,
-                          ),
+                          width: 24,
+                          height: 24,
+                          child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
                         )
                       : const Text(
                           "Create Account",
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
+                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
                         ),
                 ),
-              ),
+              ).animate().fadeIn(delay: 800.ms).slideY(begin: 0.1),
 
-              const SizedBox(height: 25),
+              const SizedBox(height: 32),
 
               Center(
-                child: GestureDetector(
-                  onTap: () {
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => const LoginScreen(),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Text("Already have an account? ", style: TextStyle(color: AppTheme.textSecondary)),
+                    GestureDetector(
+                      onTap: () => Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const LoginScreen())),
+                      child: const Text(
+                        "Login",
+                        style: TextStyle(color: AppTheme.primary, fontWeight: FontWeight.bold),
                       ),
-                    );
-                  },
-                  child: const Text(
-                    "Already have an account? Login",
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.blue,
-                      fontWeight: FontWeight.bold,
                     ),
-                  ),
+                  ],
                 ),
-              ),
+              ).animate().fadeIn(delay: 900.ms),
 
               const SizedBox(height: 40),
             ],
@@ -225,7 +237,37 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
     );
   }
 
-  // 🔐 REGISTER USER WITH ROLE
+  Widget _roleCard({required String title, required String role, required IconData icon}) {
+    final isSelected = _selectedRole == role;
+    return GestureDetector(
+      onTap: () => setState(() => _selectedRole = role),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 300),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: isSelected ? AppTheme.primary : Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: isSelected
+              ? [BoxShadow(color: AppTheme.primary.withOpacity(0.3), blurRadius: 10, offset: const Offset(0, 5))]
+              : [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 5))],
+        ),
+        child: Column(
+          children: [
+            Icon(icon, color: isSelected ? Colors.white : AppTheme.primary, size: 32),
+            const SizedBox(height: 8),
+            Text(
+              title,
+              style: TextStyle(
+                color: isSelected ? Colors.white : AppTheme.textPrimary,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Future<void> _registerUser() async {
     if (_isLoading) return;
 
@@ -233,78 +275,83 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
     final password = _passwordController.text.trim();
 
     if (email.isEmpty || password.isEmpty) {
-      _showMessage("Email and password are required");
+      _showMessage("Email and password are required", isError: true);
       return;
     }
 
     if (!_acceptTerms) {
-      _showMessage("Please accept terms and conditions");
-      return;
-    }
-
-    if (password.length < 6) {
-      _showMessage("Password must be at least 6 characters");
+      _showMessage("Please accept terms and conditions", isError: true);
       return;
     }
 
     setState(() => _isLoading = true);
 
     try {
-      final response = await Supabase.instance.client.auth.signUp(
+      await Supabase.instance.client.auth.signUp(
         email: email,
         password: password,
         data: {
-          'display_name':
-              '${_firstNameController.text.trim()} ${_lastNameController.text.trim()}',
+          'display_name': '${_firstNameController.text.trim()} ${_lastNameController.text.trim()}',
           'role': _selectedRole,
         },
       );
 
-      if (response.user == null) {
-        throw "Registration failed";
-      }
-
+      if (!mounted) return;
       setState(() => _isLoading = false);
 
-     Navigator.of(context).pushAndRemoveUntil(
-  MaterialPageRoute(builder: (_) => const AuthGate()),
-  (route) => false,
-);
-
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (_) => const AuthGate()),
+        (route) => false,
+      );
     } catch (e) {
+      if (!mounted) return;
       setState(() => _isLoading = false);
-      _showMessage(e.toString());
+      _showMessage(e.toString(), isError: true);
     }
   }
 
   Widget _inputField({
     required TextEditingController controller,
-    required String hint,
+    required String label,
     required IconData icon,
     bool obscure = false,
     Widget? suffix,
   }) {
-    return TextField(
-      controller: controller,
-      obscureText: obscure,
-      decoration: InputDecoration(
-        prefixIcon: Icon(icon, color: Colors.grey),
-        suffixIcon: suffix,
-        hintText: hint,
-        filled: true,
-        fillColor: Colors.white,
-        contentPadding: const EdgeInsets.symmetric(vertical: 18),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: BorderSide.none,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(left: 4, bottom: 8),
+          child: Text(
+            label,
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: AppTheme.textPrimary),
+          ),
         ),
-      ),
+        TextField(
+          controller: controller,
+          obscureText: obscure,
+          decoration: InputDecoration(
+            prefixIcon: Icon(icon, size: 18, color: AppTheme.primary.withOpacity(0.5)),
+            suffixIcon: suffix,
+            hintText: label,
+            filled: true,
+            fillColor: Colors.white,
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
+          ),
+        ),
+      ],
     );
   }
 
-  void _showMessage(String message) {
+  void _showMessage(String message, {bool isError = false}) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message)),
+      SnackBar(
+        content: Text(message),
+        backgroundColor: isError ? AppTheme.error : AppTheme.success,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      ),
     );
   }
 }
+

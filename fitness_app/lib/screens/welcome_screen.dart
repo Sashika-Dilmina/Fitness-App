@@ -1,5 +1,7 @@
-import 'package:fitness_app/screens/onboarding_goal_screen.dart';
+import 'package:fitness_app/theme/app_theme.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
+import 'onboarding_goal_screen.dart';
 
 class WelcomeScreen extends StatelessWidget {
   const WelcomeScreen({super.key});
@@ -15,62 +17,86 @@ class WelcomeScreen extends StatelessWidget {
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              Color(0xFF9EC9FF), // light blue
-              Color(0xFF9FA8FF), // light purple
+              Color(0xFF6366F1), // Indigo
+              Color(0xFF22D3EE), // Cyan
             ],
           ),
         ),
         child: SafeArea(
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              // 🔹 Center Text
+              const Spacer(flex: 3),
+              
+              // Animated Logo Section
               Column(
                 children: [
-                  const SizedBox(height: 200),
+                   Container(
+                    padding: const EdgeInsets.all(24),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.2),
+                      shape: BoxShape.circle,
+                      border: Border.all(color: Colors.white.withOpacity(0.3)),
+                    ),
+                    child: const Icon(
+                      Icons.fitness_center_rounded,
+                      color: Colors.white,
+                      size: 64,
+                    ),
+                  ).animate().scale(duration: 600.ms, curve: Curves.elasticOut).rotate(begin: -0.1, end: 0),
+                  
+                  const SizedBox(height: 32),
 
-                  // FitnessX on one line
                   RichText(
                     textAlign: TextAlign.center,
-                    text: const TextSpan(
-                      style: TextStyle(
-                        fontSize: 36,
-                        fontWeight: FontWeight.bold,
+                    text: TextSpan(
+                      style: Theme.of(context).textTheme.displayMedium?.copyWith(
+                        color: Colors.white,
+                        letterSpacing: 2,
                       ),
-                      children: [
-                        TextSpan(
-                          text: "Fitness",
-                          style: TextStyle(color: Colors.black),
-                        ),
+                      children: const [
+                        TextSpan(text: "FITNESS"),
                         TextSpan(
                           text: "X",
-                          style: TextStyle(color: Colors.white),
+                          style: TextStyle(fontWeight: FontWeight.w900),
                         ),
                       ],
                     ),
-                  ),
+                  ).animate().fadeIn(delay: 300.ms).slideY(begin: 0.2),
 
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 16),
 
                   const Text(
                     "Everybody Can Train",
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 16,
-                      color: Colors.black54,
+                      color: Colors.white70,
+                      letterSpacing: 1.2,
                     ),
-                  ),
+                  ).animate().fadeIn(delay: 500.ms),
                 ],
               ),
 
-              // 🔹 Get Started Button
+              const Spacer(flex: 4),
+
+              // Get Started Button
               Padding(
-                padding: const EdgeInsets.only(bottom: 40),
-                child: SizedBox(
-                  width: MediaQuery.of(context).size.width * 0.85,
-                  height: 55,
+                padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 40),
+                child: Container(
+                  width: double.infinity,
+                  height: 60,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(30),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.1),
+                        blurRadius: 20,
+                        offset: const Offset(0, 10),
+                      ),
+                    ],
+                  ),
                   child: ElevatedButton(
-                   onPressed: () {
+                    onPressed: () {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
@@ -78,14 +104,13 @@ class WelcomeScreen extends StatelessWidget {
                         ),
                       );
                     },
-
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.white,
-                      foregroundColor: Colors.blue,
+                      foregroundColor: AppTheme.primary,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(30),
                       ),
-                      elevation: 5,
+                      elevation: 0,
                     ),
                     child: const Text(
                       "Get Started",
@@ -96,7 +121,7 @@ class WelcomeScreen extends StatelessWidget {
                     ),
                   ),
                 ),
-              ),
+              ).animate().fadeIn(delay: 800.ms).slideY(begin: 0.2),
             ],
           ),
         ),
@@ -104,3 +129,4 @@ class WelcomeScreen extends StatelessWidget {
     );
   }
 }
+

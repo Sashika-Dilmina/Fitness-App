@@ -1,6 +1,8 @@
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:fitness_app/screens/meals/meal_planner_screen.dart';
 import 'package:fitness_app/screens/sleep/sleep_screen.dart';
+import 'package:fitness_app/services/member_workout_service.dart';
 import '../workout/workout_view.dart';
 import '../workout/workout_chart_screen.dart';
 import '../../services/auth_service.dart';
@@ -19,6 +21,46 @@ class HomeDashboardScreen extends StatefulWidget {
 
 class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
   int _currentIndex = 0;
+  String _displayName = "";
+  List<Map<String, dynamic>> _assignedWorkouts = [];
+  bool _isLoadingWorkouts = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchProfile();
+    _fetchAssignedWorkouts();
+  }
+
+  Future<void> _fetchAssignedWorkouts() async {
+    try {
+      final workouts = await MemberWorkoutService().getAssignedWorkouts();
+      if (mounted) {
+        setState(() {
+          _assignedWorkouts = workouts;
+          _isLoadingWorkouts = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) setState(() => _isLoadingWorkouts = false);
+    }
+  }
+
+  Future<void> _fetchProfile() async {
+    final user = Supabase.instance.client.auth.currentUser;
+    if (user != null) {
+      final data = await Supabase.instance.client
+          .from('profiles')
+          .select('display_name')
+          .eq('user_id', user.id)
+          .single();
+      if (mounted) {
+        setState(() {
+          _displayName = (data['display_name'] ?? "User").split(' ')[0];
+        });
+      }
+    }
+  }
 
   final List<String> _titles = [
     "Dashboard",
@@ -115,6 +157,9 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
       case 0:
         return _HomeContent(
           key: const ValueKey(0),
+          displayName: _displayName,
+          assignedWorkouts: _assignedWorkouts,
+          isLoadingWorkouts: _isLoadingWorkouts,
           onWorkoutTap: () => setState(() => _currentIndex = 1),
           onMealsTap: () => setState(() => _currentIndex = 2),
           onSleepTap: () => setState(() => _currentIndex = 3),
@@ -166,6 +211,9 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
 }
 
 class _HomeContent extends StatelessWidget {
+  final String displayName;
+  final List<Map<String, dynamic>> assignedWorkouts;
+  final bool isLoadingWorkouts;
   final VoidCallback onWorkoutTap;
   final VoidCallback onMealsTap;
   final VoidCallback onSleepTap;
@@ -173,6 +221,9 @@ class _HomeContent extends StatelessWidget {
 
   const _HomeContent({
     super.key,
+    required this.displayName,
+    required this.assignedWorkouts,
+    required this.isLoadingWorkouts,
     required this.onWorkoutTap,
     required this.onMealsTap,
     required this.onSleepTap,
@@ -194,8 +245,11 @@ class _HomeContent extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                    Text(
-                    "Hello, User 👋",
-                    style: Theme.of(context).textTheme.headlineMedium,
+                    "Hello, ${displayName.isEmpty ? 'User' : displayName} 👋",
+                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: -0.5,
+                        ),
                   ),
                   const SizedBox(height: 4),
                   Text(
@@ -295,39 +349,58 @@ class _HomeContent extends StatelessWidget {
             ],
           ).animate().fadeIn(delay: 700.ms),
 
-          const SizedBox(height: 12),
+          if (isLoadingWorkouts)
+            const Center(child: CircularProgressIndicator())
+          else if (assignedWorkouts.isEmpty)
+            Container(
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: const Column(
+                children: [
+                  Icon(Icons.event_busy_rounded, size: 48, color: AppTheme.textSecondary),
+                  SizedBox(height: 12),
+                  Text("No workouts assigned yet.", style: TextStyle(color: AppTheme.textSecondary)),
+                ],
+              ),
+            )
+          else
+            ListView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: assignedWorkouts.length > 3 ? 3 : assignedWorkouts.length,
+              itemBuilder: (context, index) {
+                final workout = assignedWorkouts[index]['workouts'];
+                if (workout == null) return const SizedBox();
 
-          ListView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: 2,
-            itemBuilder: (context, index) {
-              return Card(
-                margin: const EdgeInsets.only(bottom: 12),
-                child: ListTile(
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  leading: Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: index == 0 ? AppTheme.primaryLight : Colors.green.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(12),
+                return Card(
+                  margin: const EdgeInsets.only(bottom: 12),
+                  child: ListTile(
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    leading: Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: AppTheme.primaryLight,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Icon(
+                        Icons.fitness_center_rounded,
+                        color: AppTheme.primary,
+                      ),
                     ),
-                    child: Icon(
-                      Icons.fitness_center_rounded,
-                      color: index == 0 ? AppTheme.primary : Colors.green,
+                    title: Text(
+                      workout['name'] ?? "Workout",
+                      style: const TextStyle(fontWeight: FontWeight.bold),
                     ),
+                    subtitle: Text("${workout['minutes'] ?? '30'} mins • ${workout['description'] ?? 'No description'}"),
+                    trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 16),
+                    onTap: onWorkoutTap,
                   ),
-                  title: Text(
-                    index == 0 ? "Full Body HIIT" : "Morning Yoga",
-                    style: const TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  subtitle: const Text("45 mins • Intermediate"),
-                  trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 16),
-                  onTap: onWorkoutTap,
-                ),
-              );
-            },
-          ).animate().fadeIn(delay: 800.ms).slideY(begin: 0.1),
+                );
+              },
+            ).animate().fadeIn(delay: 800.ms).slideY(begin: 0.1),
         ],
       ),
     );
