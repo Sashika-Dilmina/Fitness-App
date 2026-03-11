@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
+import '../../theme/app_theme.dart';
 import '../services/workout_service.dart';
 
 class CreateWorkoutScreen extends StatefulWidget {
@@ -25,123 +27,99 @@ class _CreateWorkoutScreenState extends State<CreateWorkoutScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF6F7FB),
-
-      body: Padding(
-        padding: const EdgeInsets.all(20),
+      backgroundColor: AppTheme.background,
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(24),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              "Create Workout",
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            Text(
+              "Studio",
+              style: Theme.of(context).textTheme.titleLarge,
             ),
-            const SizedBox(height: 6),
+            const SizedBox(height: 8),
             const Text(
-              "Add a new workout for your members",
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.black54,
-                fontWeight: FontWeight.bold,
-              ),
+              "Design a new training program for your clients.",
+              style: TextStyle(color: AppTheme.textSecondary, fontSize: 13),
             ),
-
-            const SizedBox(height: 30),
+            const SizedBox(height: 32),
 
             _inputField(
               controller: _nameController,
               label: "Workout Name",
+              icon: Icons.fitness_center_rounded,
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 20),
 
             _inputField(
               controller: _descController,
-              label: "Description",
-              maxLines: 3,
+              label: "Description (Optional)",
+              icon: Icons.description_outlined,
+              maxLines: 4,
             ),
 
-            const SizedBox(height: 24),
+            const SizedBox(height: 32),
 
             SizedBox(
               width: double.infinity,
-              height: 52,
               child: ElevatedButton(
                 onPressed: _loading ? null : _createWorkout,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF9EC9FF),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                ),
                 child: _loading
-                    ? const CircularProgressIndicator(color: Colors.white)
-                    : const Text(
-                        "Save Workout",
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
+                    ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                    : const Text("Publish Program"),
               ),
             ),
 
-            const SizedBox(height: 30),
+            const SizedBox(height: 48),
 
-            const Divider(),
-
+            Text(
+              "My Programs",
+              style: Theme.of(context).textTheme.titleLarge,
+            ),
             const SizedBox(height: 16),
 
-            const Text(
-              "My Workouts",
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
+            FutureBuilder<List<Map<String, dynamic>>>(
+              future: _service.getMyWorkouts(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: Padding(
+                    padding: EdgeInsets.all(40.0),
+                    child: CircularProgressIndicator(),
+                  ));
+                }
 
-            const SizedBox(height: 12),
+                if (snapshot.hasError) return Text("Error: ${snapshot.error}");
 
-            Expanded(
-              child: FutureBuilder<List<Map<String, dynamic>>>(
-                future: _service.getMyWorkouts(),
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const Center(
-                      child: CircularProgressIndicator(),
-                    );
-                  }
-
-                  if (snapshot.hasError) {
-                    return Center(
-                      child: Text(snapshot.error.toString()),
-                    );
-                  }
-
-                  final workouts = snapshot.data ?? [];
-
-                  if (workouts.isEmpty) {
-                    return const Center(
-                      child: Text(
-                        "No workouts created yet",
-                        style: TextStyle(color: Colors.black54),
-                      ),
-                    );
-                  }
-
-                  return ListView.separated(
-                    itemCount: workouts.length,
-                    separatorBuilder: (_, __) => const SizedBox(height: 12),
-                    itemBuilder: (context, index) {
-                      final workout = workouts[index];
-
-                      return _WorkoutCard(
-                        name: workout['name'],
-                        description: workout['description'],
-                      );
-                    },
+                final workouts = snapshot.data ?? [];
+                if (workouts.isEmpty) {
+                  return Center(
+                    child: Column(
+                      children: [
+                        const SizedBox(height: 40),
+                        Icon(Icons.inventory_2_outlined, size: 64, color: AppTheme.primary.withOpacity(0.1)),
+                        const SizedBox(height: 16),
+                        const Text("No workouts created yet", style: TextStyle(color: AppTheme.textSecondary)),
+                      ],
+                    ),
                   );
-                },
-              ),
+                }
+
+                return ListView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: workouts.length,
+                  itemBuilder: (context, index) {
+                    final workout = workouts[index];
+                    return _WorkoutCard(
+                      name: workout['name'],
+                      description: workout['description'],
+                    ).animate().fadeIn(delay: (index * 100).ms).slideX(begin: 0.1);
+                  },
+                );
+              },
             ),
           ],
-        ),
+        ).animate().fadeIn().slideY(begin: 0.1),
       ),
     );
   }
@@ -151,7 +129,7 @@ class _CreateWorkoutScreenState extends State<CreateWorkoutScreen> {
     final desc = _descController.text.trim();
 
     if (name.isEmpty) {
-      _showMessage("Workout name is required");
+      _showMessage("Workout name is required", isError: true);
       return;
     }
 
@@ -167,43 +145,57 @@ class _CreateWorkoutScreenState extends State<CreateWorkoutScreen> {
       _descController.clear();
 
       setState(() => _loading = false);
-      _showMessage("Workout created successfully");
+      _showMessage("Workout created successfully ✨");
 
       setState(() {}); // refresh list
     } catch (e) {
       setState(() => _loading = false);
-      _showMessage(e.toString());
+      _showMessage(e.toString(), isError: true);
     }
   }
 
   Widget _inputField({
     required TextEditingController controller,
     required String label,
+    required IconData icon,
     int maxLines = 1,
   }) {
-    return TextField(
-      controller: controller,
-      maxLines: maxLines,
-      decoration: InputDecoration(
-        labelText: label,
-        filled: true,
-        fillColor: Colors.white,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: BorderSide.none,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Icon(icon, size: 16, color: AppTheme.primary),
+            const SizedBox(width: 8),
+            Text(label, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: AppTheme.textPrimary)),
+          ],
         ),
+        const SizedBox(height: 10),
+        TextField(
+          controller: controller,
+          maxLines: maxLines,
+          style: const TextStyle(fontSize: 14),
+          decoration: InputDecoration(
+             fillColor: Colors.white,
+             hintText: "Enter $label...",
+             contentPadding: const EdgeInsets.all(20),
+          ),
+        ),
+      ],
+    );
+  }
+
+  void _showMessage(String msg, {bool isError = false}) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(msg),
+        backgroundColor: isError ? AppTheme.error : AppTheme.success,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       ),
     );
   }
-
-  void _showMessage(String msg) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(msg)),
-    );
-  }
 }
-
-/* ================= WORKOUT CARD ================= */
 
 class _WorkoutCard extends StatelessWidget {
   final String name;
@@ -216,38 +208,50 @@ class _WorkoutCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 6),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            name,
-            style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
+    return Card(
+      margin: const EdgeInsets.only(bottom: 16),
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: AppTheme.primaryLight,
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: const Icon(Icons.fitness_center_rounded, color: AppTheme.primary),
             ),
-          ),
-          if (description != null && description!.isNotEmpty) ...[
-            const SizedBox(height: 6),
-            Text(
-              description!,
-              style: const TextStyle(color: Colors.black54),
+            const SizedBox(width: 20),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    name,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: AppTheme.textPrimary,
+                    ),
+                  ),
+                  if (description != null && description!.isNotEmpty) ...[
+                    const SizedBox(height: 4),
+                    Text(
+                      description!,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(color: AppTheme.textSecondary, fontSize: 12),
+                    ),
+                  ],
+                ],
+              ),
             ),
+            const Icon(Icons.chevron_right_rounded, color: AppTheme.textSecondary),
           ],
-        ],
+        ),
       ),
     );
   }
 }
+

@@ -2,134 +2,136 @@ import 'package:fitness_app/trainer/member_details_screen.dart';
 import 'package:flutter/material.dart';
 import '../services/trainer_service.dart';
 
-class MembersScreen extends StatelessWidget {
+import 'package:flutter_animate/flutter_animate.dart';
+import 'package:fitness_app/theme/app_theme.dart';
+
+class MembersScreen extends StatefulWidget {
   const MembersScreen({super.key});
+
+  @override
+  State<MembersScreen> createState() => _MembersScreenState();
+}
+
+class _MembersScreenState extends State<MembersScreen> {
+  String _searchQuery = "";
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF6F7FB),
-
-    
-      /* ================= BODY ================= */
-      body: FutureBuilder<List<Map<String, dynamic>>>(
-        future: TrainerService().getMyMembers(),
-        builder: (context, snapshot) {
-          // ⏳ Loading
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
-
-          // ❌ Error
-          if (snapshot.hasError) {
-            return Center(
-              child: Text(
-                "Error loading members\n${snapshot.error}",
-                textAlign: TextAlign.center,
+      backgroundColor: AppTheme.background,
+      body: Column(
+        children: [
+          // Search Header
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
+            child: TextField(
+              onChanged: (val) => setState(() => _searchQuery = val),
+              decoration: InputDecoration(
+                hintText: "Search members...",
+                prefixIcon: const Icon(Icons.search_rounded, color: AppTheme.textSecondary),
+                hintStyle: const TextStyle(color: AppTheme.textSecondary),
+                fillColor: Colors.white,
+                filled: true,
               ),
-            );
-          }
+            ),
+          ).animate().fadeIn().slideY(begin: -0.1),
 
-          final members = snapshot.data ?? [];
+          Expanded(
+            child: FutureBuilder<List<Map<String, dynamic>>>(
+              future: TrainerService().getMyMembers(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                }
 
-          // 🟡 Empty state
-          if (members.isEmpty) {
-            return const Center(
-              child: Text(
-                "No members assigned yet",
-                style: TextStyle(fontSize: 16, color: Colors.black54),
-              ),
-            );
-          }
-
-          // ✅ Members list
-          return ListView.separated(
-            padding: const EdgeInsets.all(16),
-            itemCount: members.length,
-            separatorBuilder: (_, __) => const SizedBox(height: 12),
-            itemBuilder: (context, index) {
-              final member = members[index];
-              final profile = member['profiles'];
-
-              return _MemberCard(
-                name: profile['display_name'] ?? 'Unknown',
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => MemberDetailsScreen(
-                        memberId: member['member_id'],
-                        memberName: member['profiles']['display_name'],
-                      ),
+                if (snapshot.hasError) {
+                  return Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(Icons.error_outline_rounded, size: 48, color: AppTheme.error),
+                        const SizedBox(height: 16),
+                        Text("Error loading members: ${snapshot.error}"),
+                      ],
                     ),
                   );
-                },
+                }
 
-              );
-            },
-          );
-        },
-      ),
-    );
-  }
-}
+                final allMembers = snapshot.data ?? [];
+                
+                // Filter logic
+                final members = allMembers.where((m) {
+                  final name = (m['profiles']['display_name'] ?? "").toString().toLowerCase();
+                  return name.contains(_searchQuery.toLowerCase());
+                }).toList();
 
-/* ================= MEMBER CARD ================= */
+                if (members.isEmpty) {
+                  return Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.people_outline_rounded, size: 64, color: AppTheme.primary.withOpacity(0.2)),
+                        const SizedBox(height: 16),
+                        Text(
+                          _searchQuery.isEmpty ? "No members assigned yet" : "No members match your search",
+                          style: const TextStyle(color: AppTheme.textSecondary, fontSize: 16),
+                        ),
+                      ],
+                    ),
+                  );
+                }
 
-class _MemberCard extends StatelessWidget {
-  final String name;
-  final VoidCallback onTap;
+                return ListView.builder(
+                  padding: const EdgeInsets.fromLTRB(20, 0, 20, 120),
+                  itemCount: members.length,
+                  itemBuilder: (context, index) {
+                    final member = members[index];
+                    final profile = member['profiles'];
+                    final name = profile['display_name'] ?? 'Unknown';
 
-  const _MemberCard({
-    required this.name,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      borderRadius: BorderRadius.circular(18),
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(18),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 10,
-              offset: const Offset(0, 6),
+                    return Card(
+                      margin: const EdgeInsets.only(bottom: 12),
+                      child: ListTile(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => MemberDetailsScreen(
+                                memberId: member['member_id'],
+                                memberName: name,
+                              ),
+                            ),
+                          );
+                        },
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        leading: Hero(
+                          tag: 'avatar_${member['member_id']}',
+                          child: CircleAvatar(
+                            radius: 24,
+                            backgroundColor: AppTheme.primaryLight,
+                            child: Text(
+                              name.isNotEmpty ? name[0].toUpperCase() : '?',
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: AppTheme.primary,
+                              ),
+                            ),
+                          ),
+                        ),
+                        title: Text(
+                          name,
+                          style: const TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                        subtitle: const Text("Premium Member • Active Plan"),
+                        trailing: const Icon(Icons.chevron_right_rounded, color: AppTheme.textSecondary),
+                      ),
+                    ).animate().fadeIn(delay: (index * 50).ms).slideX(begin: 0.1);
+                  },
+                );
+              },
             ),
-          ],
-        ),
-        child: Row(
-          children: [
-            CircleAvatar(
-              radius: 26,
-              backgroundColor: const Color(0xFF9EC9FF),
-              child: Text(
-                name.isNotEmpty ? name[0].toUpperCase() : '?',
-                style: const TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
-              ),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Text(
-                name,
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-            const Icon(Icons.arrow_forward_ios, size: 16),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

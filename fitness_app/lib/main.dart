@@ -2,6 +2,8 @@ import 'package:fitness_app/app_start_gate.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import 'package:fitness_app/theme/app_theme.dart';
+
 import 'services/notification_service.dart';
 
 void main() async {
@@ -23,10 +25,10 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
+    return MaterialApp(
       debugShowCheckedModeBanner: false,
+      theme: AppTheme.lightTheme,
       home: const AppStartGate(),
-
     );
   }
 }
