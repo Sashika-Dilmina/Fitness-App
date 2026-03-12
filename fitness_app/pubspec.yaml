@@ -91,6 +91,7 @@ flutter:
     - assets/images/goal_3.png
     - assets/images/welcome.png
     - assets/images/login_illustration.png
+    - assets/icon/app_icon.png
 
 flutter_icons:
   android: true

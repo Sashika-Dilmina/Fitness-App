@@ -31,16 +31,27 @@ class WelcomeScreen extends StatelessWidget {
               Column(
                 children: [
                    Container(
-                    padding: const EdgeInsets.all(24),
+                    padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.2),
+                      color: Colors.white.withOpacity(0.25),
                       shape: BoxShape.circle,
-                      border: Border.all(color: Colors.white.withOpacity(0.3)),
+                      border: Border.all(color: Colors.white.withOpacity(0.5), width: 3),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.15),
+                          blurRadius: 30,
+                          spreadRadius: 5,
+                          offset: const Offset(0, 10),
+                        ),
+                      ],
                     ),
-                    child: const Icon(
-                      Icons.fitness_center_rounded,
-                      color: Colors.white,
-                      size: 64,
+                    child: ClipOval(
+                      child: Image.asset(
+                        'assets/icon/app_icon.png',
+                        width: 140,
+                        height: 140,
+                        fit: BoxFit.cover,
+                      ),
                     ),
                   ).animate().scale(duration: 600.ms, curve: Curves.elasticOut).rotate(begin: -0.1, end: 0),
                   
@@ -54,7 +65,7 @@ class WelcomeScreen extends StatelessWidget {
                         letterSpacing: 2,
                       ),
                       children: const [
-                        TextSpan(text: "FITNESS"),
+                        TextSpan(text: "Fitness"),
                         TextSpan(
                           text: "X",
                           style: TextStyle(fontWeight: FontWeight.w900),

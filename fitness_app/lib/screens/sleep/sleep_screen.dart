@@ -94,10 +94,18 @@ class _SleepScreenState extends State<SleepScreen> {
           ),
         ),
         child: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24),
-            child: Column(
-              children: [
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              return SingleChildScrollView(
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    minHeight: constraints.maxHeight,
+                  ),
+                  child: IntrinsicHeight(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 24),
+                      child: Column(
+                        children: [
                 const SizedBox(height: 40),
                 Text(
                   "Sleep Status",
@@ -242,8 +250,13 @@ class _SleepScreenState extends State<SleepScreen> {
                 ).animate().fadeIn(delay: 800.ms).slideY(begin: 0.1),
 
                 const SizedBox(height: 40),
-              ],
-            ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            },
           ),
         ),
       ),

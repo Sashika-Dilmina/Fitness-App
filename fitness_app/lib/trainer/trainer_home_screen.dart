@@ -154,23 +154,26 @@ class TrainerDashboard extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    "Welcome Coach ${displayName.isEmpty ? '' : displayName} 👋",
-                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                          letterSpacing: -0.5,
-                        ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    "Manage your team and training plans",
-                    style: Theme.of(context).textTheme.bodyMedium,
-                  ),
-                ],
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      "Welcome Coach ${displayName.isEmpty ? '' : displayName} 👋",
+                      style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: -0.5,
+                          ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      "Manage your team and training plans",
+                      style: Theme.of(context).textTheme.bodyMedium,
+                    ),
+                  ],
+                ),
               ),
+              const SizedBox(width: 16),
               const CircleAvatar(
                 radius: 28,
                 backgroundColor: AppTheme.secondary,
